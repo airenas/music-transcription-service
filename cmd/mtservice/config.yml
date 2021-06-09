@@ -1,3 +1,6 @@
 port: 8002
 
 tempDir: ./tmp
+
+app:
+  cmd: echo 

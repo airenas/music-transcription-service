@@ -23,7 +23,7 @@ func main() {
 	}
 	data.Worker, err = transcriber.NewWorker(goapp.Config.GetString("app.cmd"))
 	if err != nil {
-		goapp.Log.Fatal(errors.Wrap(err, "Can't init ffmpeg wrapper"))
+		goapp.Log.Fatal(errors.Wrap(err, "Can't init transcriber wrapper"))
 	}
 
 	printBanner()

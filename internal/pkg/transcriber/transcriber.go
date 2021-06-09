@@ -70,12 +70,13 @@ func runCmd(cmdArr []string, timeout time.Duration) error {
 
 func getNewFile(file string) string {
 	f := filepath.Base(file)
+	ext := filepath.Ext(f)
 	d := filepath.Dir(file)
-	return filepath.Join(d, fmt.Sprintf("%s.%s", f, "musicxml"))
+	return filepath.Join(d, fmt.Sprintf("%s.%s", f[:len(f)-len(ext)], "musicxml"))
 }
 
 func mapError(err error, mf func() string) error {
-	var exitErr exec.ExitError
+	var exitErr *exec.ExitError
 	if errors.As(err, &exitErr) {
 		c := exitErr.ExitCode()
 		if c == 1 {

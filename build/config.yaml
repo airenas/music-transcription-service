@@ -1,0 +1,6 @@
+port: 8000
+
+tempDir: ./tmp
+
+app:
+  cmd: cp {{INPUT}} {{OUTPUT}}

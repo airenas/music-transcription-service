@@ -1,0 +1,10 @@
+version: '3.7'
+
+services:
+  audio-len:
+    image: airenas/music-transcription-service:${VERSION}
+    ports:
+      - "${PORT}:8000"
+    # restart: unless-stopped
+
+ 

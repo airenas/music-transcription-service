@@ -6,10 +6,24 @@
 The APi takes a *wav* audio file and produces *musicxml*. It is a wrapper for a private transcription tool. The tool is not provided here.
 
 ## Building 
-*...in progress*
+To build docker container and push to *dockerhub*:
 
-## Deployment 
-*...in progress*
+```bash
+cd build && make clean dpush
+```
+
+## Testing 
+
+Start the sample service: 
+
+```bash
+cd examples/docker-compose && make start
+```
+
+It will start the service at port 8002. See *examples/docker-compose/Makefile* as an example call to the service:
+```bash
+curl -X POST http://localhost:8002/transcription -H 'content-type: multipart/form-data' -F file=@1.wav
+``` 
 
 ---
 

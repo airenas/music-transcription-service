@@ -56,7 +56,7 @@ func TestTranscribe(t *testing.T) {
 
 func TestCTranscribe_FailData(t *testing.T) {
 	initTest(t)
-	req := httptest.NewRequest("POST", "/transcribe", strings.NewReader("aa"))
+	req := httptest.NewRequest("POST", "/transcription", strings.NewReader("aa"))
 
 	tEcho.ServeHTTP(tRec, req)
 
@@ -159,7 +159,7 @@ func newTestRequest(file string) *http.Request {
 		_, _ = io.Copy(part, strings.NewReader("body"))
 	}
 	writer.Close()
-	req := httptest.NewRequest("POST", "/transcribe", body)
+	req := httptest.NewRequest("POST", "/transcription", body)
 	req.Header.Set("Content-Type", writer.FormDataContentType())
 	return req
 }

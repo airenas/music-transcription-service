@@ -75,7 +75,7 @@ func initRoutes(data *Data) *echo.Echo {
 	e := echo.New()
 	promMdlw.Use(e)
 
-	e.POST("/transcribe", transcribe(data))
+	e.POST("/transcription", transcribe(data))
 	e.GET("/live", live(data))
 
 	goapp.Log.Info("Routes:")

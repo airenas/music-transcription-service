@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/airenas/go-app/pkg/goapp"
+	"github.com/airenas/music-transcription-service/internal/pkg/limiter"
 	"github.com/airenas/music-transcription-service/internal/pkg/utils"
 	"github.com/facebookgo/grace/gracehttp"
 	"github.com/google/uuid"
@@ -37,8 +38,9 @@ type (
 	Data struct {
 		Port int
 
-		Saver  FileSaver
-		Worker Transcriber
+		Saver   FileSaver
+		Worker  Transcriber
+		Limiter *limiter.Count
 
 		readFunc func(string) ([]byte, error)
 	}
@@ -93,6 +95,12 @@ type output struct {
 
 func transcribe(data *Data) func(echo.Context) error {
 	return func(c echo.Context) error {
+		closef, err := data.Limiter.Acquire()
+		if err != nil {
+			return echo.NewHTTPError(http.StatusForbidden, "service too busy")
+		}
+		defer closef()
+
 		defer goapp.Estimate("Service method")()
 
 		form, err := c.MultipartForm()

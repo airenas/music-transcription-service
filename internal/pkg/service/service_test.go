@@ -9,7 +9,9 @@ import (
 	"net/http/httptest"
 	"strings"
 	"testing"
+	"time"
 
+	"github.com/airenas/music-transcription-service/internal/pkg/limiter"
 	"github.com/airenas/music-transcription-service/internal/pkg/utils"
 	"github.com/labstack/echo/v4"
 	"github.com/stretchr/testify/assert"
@@ -55,10 +57,20 @@ func TestTranscribe(t *testing.T) {
 func TestCTranscribe_FailData(t *testing.T) {
 	initTest(t)
 	req := httptest.NewRequest("POST", "/transcribe", strings.NewReader("aa"))
-	
+
 	tEcho.ServeHTTP(tRec, req)
 
 	assert.Equal(t, http.StatusBadRequest, tRec.Code)
+}
+
+func TestCTranscribe_FailLimit(t *testing.T) {
+	initTest(t)
+	tData.Limiter, _ = limiter.NewCount(1, time.Millisecond)
+	cf, _ := tData.Limiter.Acquire()
+	defer cf()
+	tEcho.ServeHTTP(tRec, tReq)
+
+	assert.Equal(t, http.StatusForbidden, tRec.Code)
 }
 
 func TestTranscribe_FailType(t *testing.T) {
@@ -134,7 +146,9 @@ func (s *testCoder) Convert(name string) (string, error) {
 }
 
 func newTestData(s FileSaver, e Transcriber) *Data {
-	return &Data{Saver: s, Worker: e, readFunc: func(string) ([]byte, error) { return []byte("test"), nil }}
+	l, _ := limiter.NewCount(1, time.Second)
+	return &Data{Saver: s, Worker: e, readFunc: func(string) ([]byte, error) { return []byte("test"), nil },
+		Limiter: l}
 }
 
 func newTestRequest(file string) *http.Request {

@@ -1,8 +1,11 @@
 package main
 
 import (
+	"time"
+
 	"github.com/airenas/go-app/pkg/goapp"
 	"github.com/airenas/music-transcription-service/internal/pkg/file"
+	"github.com/airenas/music-transcription-service/internal/pkg/limiter"
 	"github.com/airenas/music-transcription-service/internal/pkg/service"
 	"github.com/airenas/music-transcription-service/internal/pkg/transcriber"
 	"github.com/labstack/gommon/color"
@@ -19,18 +22,21 @@ func main() {
 	goapp.Log.Infof("Temp dir: %s", goapp.Config.GetString("tempDir"))
 	data.Saver, err = file.NewSaver(goapp.Config.GetString("tempDir"))
 	if err != nil {
-		goapp.Log.Fatal(errors.Wrap(err, "Can't init file saver"))
+		goapp.Log.Fatal(errors.Wrap(err, "can't init file saver"))
 	}
 	data.Worker, err = transcriber.NewWorker(goapp.Config.GetString("app.cmd"))
 	if err != nil {
-		goapp.Log.Fatal(errors.Wrap(err, "Can't init transcriber wrapper"))
+		goapp.Log.Fatal(errors.Wrap(err, "can't init transcriber wrapper"))
 	}
-
+	data.Limiter, err = limiter.NewCount(10, time.Second*2)
+	if err != nil {
+		goapp.Log.Fatal(errors.Wrap(err, "can't init rate limiter"))
+	}
 	printBanner()
 
 	err = service.StartWebServer(&data)
 	if err != nil {
-		goapp.Log.Fatal(errors.Wrap(err, "Can't start the service"))
+		goapp.Log.Fatal(errors.Wrap(err, "can't start the service"))
 	}
 }
 

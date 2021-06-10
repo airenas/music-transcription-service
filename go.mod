@@ -1,6 +1,6 @@
 module github.com/airenas/music-transcription-service
 
-go 1.15
+go 1.16
 
 require (
 	github.com/airenas/go-app v0.2.1

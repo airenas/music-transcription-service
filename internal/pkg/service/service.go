@@ -52,13 +52,10 @@ func StartWebServer(data *Data) error {
 	portStr := strconv.Itoa(data.Port)
 	data.readFunc = ioutil.ReadFile
 	e := initRoutes(data)
-
-	e.Server = &http.Server{
-		Addr:         ":" + portStr,
-		ReadTimeout:  2 * time.Minute,
-		WriteTimeout: 2 * time.Minute,
-		IdleTimeout:  2 * time.Minute,
-	}
+	e.Server.Addr = ":" + portStr
+	e.Server.ReadTimeout = 2 * time.Minute
+	e.Server.WriteTimeout = 2 * time.Minute
+	e.Server.IdleTimeout = 2 * time.Minute
 
 	w := goapp.Log.Writer()
 	defer w.Close()

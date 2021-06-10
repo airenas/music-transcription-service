@@ -18,7 +18,7 @@ var testParams []string
 func initTest(t *testing.T) {
 	var err error
 	testParams = nil
-	testTr, err = NewWorker("trApp")
+	testTr, err = NewWorker("trApp {{INPUT}} {{OUTPUT}}")
 	testTr.convertFunc = func(cmd []string) error {
 		testParams = cmd
 		return nil
@@ -68,3 +68,11 @@ func TestRunCmd_Timeout(t *testing.T) {
 	err := runCmd([]string{"sleep", "1"}, time.Millisecond*50)
 	assert.True(t, errors.Is(err, context.DeadlineExceeded))
 }
+
+func TestPrepareParams(t *testing.T) {
+	assert.Equal(t, []string{"app"}, prepareParams("app", "1", "2"))
+	assert.Equal(t, []string{"app", "1"}, prepareParams("app {{INPUT}}", "1", "2"))
+	assert.Equal(t, []string{"app", "2", "1"}, prepareParams("app {{OUTPUT}} {{INPUT}}", "1", "2"))
+	assert.Equal(t, []string{"app", "2", "1=2"}, prepareParams("app {{OUTPUT}} {{INPUT}}={{OUTPUT}}", "1", "2"))
+}
+

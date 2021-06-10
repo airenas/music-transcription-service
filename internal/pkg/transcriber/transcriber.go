@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"time"
 
+	"github.com/airenas/go-app/pkg/goapp"
 	"github.com/airenas/music-transcription-service/internal/pkg/utils"
 	"github.com/pkg/errors"
 	"golang.org/x/net/context"
@@ -26,13 +28,14 @@ func NewWorker(cmdPath string) (*Worker, error) {
 	}
 	res.cmdPath = cmdPath
 	res.convertFunc = func(p []string) error { return runCmd(p, time.Minute*2) }
+	goapp.Log.Infof("Cmd: %s", cmdPath)
 	return &res, nil
 }
 
 //Convert returns name of new converted file
 func (e *Worker) Convert(nameIn string) (string, error) {
 	resName := getNewFile(nameIn)
-	params := []string{e.cmdPath, nameIn, resName}
+	params := prepareParams(e.cmdPath, nameIn, resName)
 	err := e.convertFunc(params)
 	if err != nil {
 		return "", err
@@ -44,6 +47,7 @@ func runCmd(cmdArr []string, timeout time.Duration) error {
 	ctx, cancel := context.WithTimeout(context.Background(), timeout)
 	defer cancel()
 
+	goapp.Log.Infof("Cmd: %s", strings.Join(cmdArr, " "))
 	cmd := exec.CommandContext(ctx, cmdArr[0], cmdArr[1:]...)
 	var outputBuffer bytes.Buffer
 	cmd.Stdout = &outputBuffer
@@ -85,4 +89,12 @@ func mapError(err error, mf func() string) error {
 		return utils.NewErrTranscribe("Some other error")
 	}
 	return errors.Wrap(err, "Output: "+mf())
+}
+
+func prepareParams(cmd, fIn, fOut string) []string {
+	res := []string{}
+	iCmd := strings.ReplaceAll(cmd, "{{INPUT}}", fIn)
+	iCmd = strings.ReplaceAll(iCmd, "{{OUTPUT}}", fOut)
+	res = append(res, strings.Split(iCmd, " ")...)
+	return res
 }

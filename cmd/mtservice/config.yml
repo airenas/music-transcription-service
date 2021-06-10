@@ -3,4 +3,4 @@ port: 8002
 tempDir: ./tmp
 
 app:
-  cmd: echo 
+  cmd: cp tmp/la-cucaracha.xml {{OUTPUT}}

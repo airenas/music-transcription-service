@@ -3,7 +3,7 @@
 dist_dir=$(CURDIR)/data
 executable_name=mtservice
 main_dir=../cmd/$(executable_name)
-service=airenas/music-transcription-service
+service=intelektikalt/music-transcription-service
 version=0.1
 go_build_cmd=CGO_ENABLED=0 go build
 commit_count=$(shell git rev-list --count HEAD)

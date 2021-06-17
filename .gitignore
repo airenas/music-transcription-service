@@ -16,3 +16,4 @@
 .vscode/**
 cmd/mtservice/mtservice
 build/data/**
+build/Makefile.options

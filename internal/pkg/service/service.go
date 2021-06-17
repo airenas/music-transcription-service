@@ -154,6 +154,7 @@ func transcribe(data *Data) func(echo.Context) error {
 		defer deleteFile(fileNameOut)
 		est()
 
+		est = goapp.Estimate("Read/encode")
 		fd, err := data.readFunc(fileNameOut)
 		if err != nil {
 			goapp.Log.Error(err)
@@ -161,6 +162,7 @@ func transcribe(data *Data) func(echo.Context) error {
 		}
 
 		res.MusicXML = base64.StdEncoding.EncodeToString(fd)
+		est()
 
 		return c.JSON(http.StatusOK, res)
 	}

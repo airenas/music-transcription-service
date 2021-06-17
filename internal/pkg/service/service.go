@@ -31,7 +31,7 @@ type (
 
 	// Encoder encodes file, returns file name
 	Transcriber interface {
-		Convert(nameIn string) (string, error)
+		Convert(nameIn, instrument string) (string, error)
 	}
 
 	//Data is service operation data
@@ -114,6 +114,8 @@ func transcribe(data *Data) func(echo.Context) error {
 			return echo.NewHTTPError(http.StatusBadRequest, "multiple files")
 		}
 
+		instrument := c.FormValue("instrument")
+
 		file := files[0]
 		ext := filepath.Ext(file.Filename)
 		ext = strings.ToLower(ext)
@@ -140,7 +142,7 @@ func transcribe(data *Data) func(echo.Context) error {
 		est()
 
 		est = goapp.Estimate("Transcribe")
-		fileNameOut, err := data.Worker.Convert(fileNameIn)
+		fileNameOut, err := data.Worker.Convert(fileNameIn, instrument)
 		res := &output{}
 		if err != nil {
 			var errTr *utils.ErrTranscribe

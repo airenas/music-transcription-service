@@ -52,6 +52,7 @@ func TestTranscribe(t *testing.T) {
 
 	assert.Equal(t, http.StatusOK, tRec.Code)
 	assert.Equal(t, `{"musicXML":"dGVzdA=="}`+"\n", tRec.Body.String())
+	assert.Equal(t, "flute", tCoder.ins)
 }
 
 func TestCTranscribe_FailData(t *testing.T) {
@@ -137,11 +138,13 @@ func (s *testSaver) Save(name string, reader io.Reader) (string, error) {
 type testCoder struct {
 	err  error
 	name string
+	ins  string
 	res  string
 }
 
-func (s *testCoder) Convert(name string) (string, error) {
+func (s *testCoder) Convert(name, ins string) (string, error) {
 	s.name = name
+	s.ins = ins
 	return s.res, s.err
 }
 
@@ -158,6 +161,7 @@ func newTestRequest(file string) *http.Request {
 		part, _ := writer.CreateFormFile("file", file)
 		_, _ = io.Copy(part, strings.NewReader("body"))
 	}
+	writer.WriteField("instrument", "flute")
 	writer.Close()
 	req := httptest.NewRequest("POST", "/transcription", body)
 	req.Header.Set("Content-Type", writer.FormDataContentType())

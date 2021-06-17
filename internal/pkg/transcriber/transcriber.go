@@ -33,9 +33,9 @@ func NewWorker(cmdPath string) (*Worker, error) {
 }
 
 //Convert returns name of new converted file
-func (e *Worker) Convert(nameIn string) (string, error) {
+func (e *Worker) Convert(nameIn, instrument string) (string, error) {
 	resName := getNewFile(nameIn)
-	params := prepareParams(e.cmdPath, nameIn, resName)
+	params := prepareParams(e.cmdPath, nameIn, resName, instrument)
 	err := e.convertFunc(params)
 	if err != nil {
 		return "", err
@@ -91,10 +91,11 @@ func mapError(err error, mf func() string) error {
 	return errors.Wrap(err, "Output: "+mf())
 }
 
-func prepareParams(cmd, fIn, fOut string) []string {
+func prepareParams(cmd, fIn, fOut, ins string) []string {
 	res := []string{}
 	iCmd := strings.ReplaceAll(cmd, "{{INPUT}}", fIn)
 	iCmd = strings.ReplaceAll(iCmd, "{{OUTPUT}}", fOut)
+	iCmd = strings.ReplaceAll(iCmd, "{{INSTRUMENT}}", ins)
 	res = append(res, strings.Split(iCmd, " ")...)
 	return res
 }

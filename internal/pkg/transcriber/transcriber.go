@@ -49,9 +49,10 @@ func runCmd(cmdArr []string, timeout time.Duration) error {
 
 	goapp.Log.Infof("Cmd: %s", strings.Join(cmdArr, " "))
 	cmd := exec.CommandContext(ctx, cmdArr[0], cmdArr[1:]...)
-	var outputBuffer bytes.Buffer
-	cmd.Stdout = &outputBuffer
-	cmd.Stderr = &outputBuffer
+	var outBuffer bytes.Buffer
+	var errBuffer bytes.Buffer
+	cmd.Stdout = &outBuffer
+	cmd.Stderr = &errBuffer
 
 	resChan := make(chan error, 1)
 	go func() {
@@ -63,12 +64,12 @@ func runCmd(cmdArr []string, timeout time.Duration) error {
 	case e := <-resChan:
 		err = e
 	case <-ctx.Done():
-		return errors.Wrap(ctx.Err(), "Timeout. Output: "+outputBuffer.String())
+		return errors.Wrap(ctx.Err(), fmt.Sprintf("Timeout. Out: %s\nErr: %s", outBuffer.String(), errBuffer.String()))
 	}
 
-	if err != nil {
-		es := outputBuffer.String()
-		goapp.Log.Errorf("Cmd err: %s", es)
+	es := errBuffer.String()
+	if err != nil || es != "" {
+		goapp.Log.Errorf("Cmd err: %s\nout %s:", es, outBuffer.String())
 		return mapError(err, es)
 	}
 	return nil
@@ -82,6 +83,10 @@ func getNewFile(file string) string {
 }
 
 func mapError(err error, es string) error {
+	if es != "" {
+		return utils.NewErrTranscribe(es)
+	}
+
 	var exitErr *exec.ExitError
 	if errors.As(err, &exitErr) {
 		c := exitErr.ExitCode()
@@ -89,15 +94,11 @@ func mapError(err error, es string) error {
 			if exitErr.ProcessState != nil {
 				s := exitErr.ProcessState.String()
 				goapp.Log.Error(s)
-				return errors.Wrapf(err, "Err: %s, Output: %s", s, es)
+				return errors.Wrapf(err, "Err: %s", s)
 			}
 		}
-		if c == 1 {
-			return utils.NewErrTranscribe("Error 1")
-		}
-		return utils.NewErrTranscribe("Some other error")
 	}
-	return errors.Wrap(err, "Output: "+es)
+	return err
 }
 
 func prepareParams(cmd, fIn, fOut, ins string) []string {

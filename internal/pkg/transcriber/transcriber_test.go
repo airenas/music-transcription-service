@@ -46,11 +46,13 @@ func TestFile_Fail(t *testing.T) {
 }
 
 func TestMapError(t *testing.T) {
-	err := mapError(errors.New("olia"), "err")
-	assert.Equal(t, "Output: err: olia", err.Error())
-
-	err = mapError(&exec.ExitError{ProcessState: &os.ProcessState{}}, "err")
-	assert.Equal(t, "Some other error", err.Error())
+	err := mapError(errors.New("olia"), "stderr msg")
+	assert.Equal(t, "stderr msg", err.Error())
+	var te *utils.ErrTranscribe
+	assert.True(t, errors.As(err, &te))
+	err = mapError(&exec.ExitError{ProcessState: &os.ProcessState{}}, "")
+	assert.Equal(t, "exit status 0", err.Error())
+	assert.False(t, errors.As(err, &te))
 }
 
 func TestRunCmd(t *testing.T) {
@@ -58,10 +60,15 @@ func TestRunCmd(t *testing.T) {
 	assert.Nil(t, err)
 	err = runCmd([]string{"badcmddd"}, time.Second)
 	assert.NotNil(t, err)
-	err = runCmd([]string{"bash", "-c", "exit 1"}, time.Second)
-	assert.Equal(t, "Error 1", err.Error())
+	err = runCmd([]string{"bash", "-c", "echo aaa 1>&2; exit 1"}, time.Second)
+	assert.Equal(t, "aaa\n", err.Error())
 	var tErr *utils.ErrTranscribe
 	assert.True(t, errors.As(err, &tErr))
+	err = runCmd([]string{"bash", "-c", "echo aaa 1>&2; exit 0"}, time.Second)
+	assert.Equal(t, "aaa\n", err.Error())
+	assert.True(t, errors.As(err, &tErr))
+	err = runCmd([]string{"bash", "-c", "echo aaa; exit 1"}, time.Second)
+	assert.False(t, errors.As(err, &tErr))
 }
 
 func TestRunCmd_Timeout(t *testing.T) {

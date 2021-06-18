@@ -7,7 +7,7 @@ service=intelektikalt/music-transcription-service
 version=0.1
 go_build_cmd=CGO_ENABLED=0 go build
 commit_count=$(shell git rev-list --count HEAD)
-music_rec_dir?=../music
+music_rec_dir?=../mc
 #####################################################################################
 $(dist_dir):
 	mkdir -p $@

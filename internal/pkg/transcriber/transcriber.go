@@ -67,7 +67,9 @@ func runCmd(cmdArr []string, timeout time.Duration) error {
 	}
 
 	if err != nil {
-		return mapError(err, outputBuffer.String)
+		es := outputBuffer.String()
+		goapp.Log.Errorf("Cmd err: %s", es)
+		return mapError(err, es)
 	}
 	return nil
 }
@@ -79,7 +81,7 @@ func getNewFile(file string) string {
 	return filepath.Join(d, fmt.Sprintf("%s.%s", f[:len(f)-len(ext)], "musicxml"))
 }
 
-func mapError(err error, mf func() string) error {
+func mapError(err error, es string) error {
 	var exitErr *exec.ExitError
 	if errors.As(err, &exitErr) {
 		c := exitErr.ExitCode()
@@ -88,7 +90,7 @@ func mapError(err error, mf func() string) error {
 		}
 		return utils.NewErrTranscribe("Some other error")
 	}
-	return errors.Wrap(err, "Output: "+mf())
+	return errors.Wrap(err, "Output: "+es)
 }
 
 func prepareParams(cmd, fIn, fOut, ins string) []string {

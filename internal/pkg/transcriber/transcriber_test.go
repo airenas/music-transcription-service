@@ -46,10 +46,10 @@ func TestFile_Fail(t *testing.T) {
 }
 
 func TestMapError(t *testing.T) {
-	err := mapError(errors.New("olia"), func() string { return "err" })
+	err := mapError(errors.New("olia"), "err")
 	assert.Equal(t, "Output: err: olia", err.Error())
 
-	err = mapError(&exec.ExitError{ProcessState: &os.ProcessState{}}, func() string { return "err" })
+	err = mapError(&exec.ExitError{ProcessState: &os.ProcessState{}}, "err")
 	assert.Equal(t, "Some other error", err.Error())
 }
 
@@ -76,4 +76,3 @@ func TestPrepareParams(t *testing.T) {
 	assert.Equal(t, []string{"app", "2", "1=2"}, prepareParams("app {{OUTPUT}} {{INPUT}}={{OUTPUT}}", "1", "2", ""))
 	assert.Equal(t, []string{"app", "2", "1=2", "flute"}, prepareParams("app {{OUTPUT}} {{INPUT}}={{OUTPUT}} {{INSTRUMENT}}", "1", "2", "flute"))
 }
-

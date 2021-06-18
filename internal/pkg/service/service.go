@@ -134,15 +134,16 @@ func transcribe(data *Data) func(echo.Context) error {
 
 		est := goapp.Estimate("Saving")
 		fileNameIn, err := data.Saver.Save(fileName, src)
+		est()
 		if err != nil {
 			goapp.Log.Error(err)
 			return errors.Wrap(err, "can not save file")
 		}
 		defer deleteFile(fileNameIn)
-		est()
-
+		
 		est = goapp.Estimate("Transcribe")
 		fileNameOut, err := data.Worker.Convert(fileNameIn, instrument)
+		est()
 		res := &output{}
 		if err != nil {
 			var errTr *utils.ErrTranscribe
@@ -154,7 +155,6 @@ func transcribe(data *Data) func(echo.Context) error {
 			return errors.Wrap(err, "can not transcribe file")
 		}
 		defer deleteFile(fileNameOut)
-		est()
 
 		est = goapp.Estimate("Read/encode")
 		fd, err := data.readFunc(fileNameOut)

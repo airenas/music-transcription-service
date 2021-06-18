@@ -85,6 +85,13 @@ func mapError(err error, es string) error {
 	var exitErr *exec.ExitError
 	if errors.As(err, &exitErr) {
 		c := exitErr.ExitCode()
+		if c == -1 {
+			if exitErr.ProcessState != nil {
+				s := exitErr.ProcessState.String()
+				goapp.Log.Error(s)
+				return errors.Wrapf(err, "Err: %s, Output: %s", s, es)
+			}
+		}
 		if c == 1 {
 			return utils.NewErrTranscribe("Error 1")
 		}

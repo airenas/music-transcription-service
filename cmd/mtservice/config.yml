@@ -3,4 +3,4 @@ port: 8002
 tempDir: ./tmp
 
 app:
-  cmd: cp tmp/la-cucaracha.xml {{OUTPUT}}
+  cmd: ../../mc/musicrec {{INPUT}} - {{OUTPUT}} - {{INSTRUMENT}}
